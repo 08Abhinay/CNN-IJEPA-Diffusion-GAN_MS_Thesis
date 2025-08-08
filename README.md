@@ -64,25 +64,89 @@ Our thesis shows that injecting *semantic guidance* from I‑JEPA into a diffusi
 
 ---
 
-## 4 Quick‑start 🔧  
+## 4 Setup & training 🔧  
+
+### 4.1 Local environment (optional)  
+Use this for **dataset conversion**, **metric evaluation**, or lightweight debugging.
 
 ```bash
-# 1⃣  Create env (PyTorch 2.2 + CUDA 12)
-conda create -n ijepa_diffusion_gan python=3.10
+conda create -n ijepa_diffusion_gan python=3.10      # ❶ create env
 conda activate ijepa_diffusion_gan
-pip install -r requirements.txt
+pip install -r requirements.txt                      # ❷ install deps
 
-# 2⃣  Download pretrained I‑JEPA encoder (~120 MB)
-bash scripts/download_ijepa.sh
-
-# 3⃣  Train baseline StyleGAN2‑ADA + JEPA‑cosine on Chest X‑ray
-python train.py --cfg configs/cxr_sg2_jepa.yaml
-
-# 4⃣  Evaluate & log metrics
-python metrics/eval_all.py --run_id <RUN_DIR>
+# download pretrained I‑JEPA backbone (~120 MB)
+bash scripts/download_ijepa.sh                       # ❸
 ```
 
-*Experiments in the thesis ran on 4× V100 (32 GB); single‑GPU training is possible with `--batch_gpu 8`.*
+*Training the full model requires multi‑GPU – see next section.*
+
+### 4.2 HPC (SLURM + Apptainer) training  
+Each folder in `scripts/StyleGAN2/*` ships with a ready‑to‑submit SLURM file like below
+(`ijepa_SG_Chest_rampGD_warmup_5.4_4gpu_sem_mixing_0.9_FusionAlpha_0.2.sh`):
+
+```bash
+
+export PROJECT=~/StyleGAN2/stylegan2-ada-pytorch
+export TMPDIR=$PROJECT/tmp/torch_tmp
+mkdir -p "$TMPDIR"
+
+SEM_MIX=0.9
+FUSION_ALPHA=0.2
+
+srun apptainer exec --nv --cleanenv \
+    -B $PROJECT:$PROJECT \
+    $PROJECT/SIF_FILES/stylegan2ada-devel.sif \
+    /opt/conda/bin/python \
+    $PROJECT/ijepa-ramp-stylegan2/train.py \
+        --outdir=$PROJECT/outputs/Chest/sem_mixing_${SEM_MIX}/run_%j \
+        --data=/scratch/<user>/dataset/256/chest_xray_labelled.zip \
+        --gpus=4 --cond=1 \
+        --ijepa_checkpoint /scratch/<user>/ijepa_backbone.pth \
+        --ijepa_lambda 1.0 --ijepa_image 256 \
+        --extra_dim 2048 --ijepa_warmup_kimg 5.4 \
+        --sem_mixing_prob ${SEM_MIX} --fusion_alpha ${FUSION_ALPHA}
+```
+
+**Steps to launch**
+
+1. Edit dataset paths / checkpoint paths.
+2. Pick your `SEM_MIX` and `FUSION_ALPHA`.
+3. Submit → `sbatch scripts/StyleGAN2/ijepa-ramp-stylegan2/your_job.sh`.
+
+The script will:
+* spin up 1 node × 4 GPUs  
+* mount the project into the Apptainer container (`stylegan2ada-devel.sif`)  
+* resume from `--resume` if provided, else start fresh  
+* write snapshots / metrics in `outputs/…/training-runs/`  
+
+*Experiments in the thesis ran on 4× A100 (32 GB); single‑GPU training is possible with `--batch_gpu 8`.*
+
+### 4.3 Evaluation & Metrics (SLURM)
+
+To compute Precision/Recall, KID, and IS on your trained checkpoints via SLURM + Apptainer, create a job script like below (`scripts/StyleGAN2/ijepa-ramp-stylegan2/metrics_job.sh`):
+
+```bash
+#!/bin/bash
+
+# 1️⃣  Precision/Recall @50k (conditional)
+srun --gres=gpu:2 \
+  apptainer exec --nv --cleanenv \
+    -B $PROJECT:$PROJECT \
+    $PROJECT/SIF_FILES/stylegan2ada-devel.sif \
+    python /scratch/<user>~/calc_metrics_pr.py \
+      --metrics=pr50k3_full_cond \
+      --network=/scratch/<user>~/network-snapshot-000403.pkl \
+      --data=/scratch/<user>~/dataset/256/Brain_cancer_labelled.zip
+
+# 2️⃣  KID & IS @50k
+srun --gres=gpu:2 \
+  apptainer exec --nv --cleanenv \
+    -B $PROJECT:$PROJECT \
+    $PROJECT/SIF_FILES/stylegan2ada-devel.sif \
+    python /scratch/<user>~/calc_metrics.py \
+      --metrics=kid50k_full,is50k \
+      --network=/scratch/<user>~/network-snapshot-000403.pkl \
+      --data=/scratch/<user>~/dataset/256/Brain_cancer_labelled.zip
 
 ---
 
@@ -112,23 +176,20 @@ make all   # generates every figure & metric in ~18 h on 4 GPUs
 ## 7 Citation 📝  
 
 ```bibtex
-@mastersthesis{belde2025ijepa,
-  title  = {Addressing Data Scarcity in Medical Imaging: A Hybrid Approach Combining IJEPA, Diffusion, and GANs},
-  author = {Abhinay Shankar Belde},
-  school = {Purdue University},
-  year   = {2025},
+@article{Belde2025,
+author = "Abhinay Shankar Belde",
+title = "{Addressing Data Scarcity in Medical Imaging: A Hybrid Approach Combining IJEPA, Diffusion, and GANs}",
+year = "2025",
+month = "7",
+url = "https://hammer.purdue.edu/articles/thesis/Addressing_Data_Scarcity_in_Medical_Imaging_A_Hybrid_Approach_Combining_IJEPA_Diffusion_and_GANs/29649557",
+doi = "10.25394/PGS.29649557.v1"
 }
 ```
 
----
-
-## 8 License 📄  
-
-Apache 2.0 — see `LICENSE`.  
-**Generated images must not be used for clinical diagnosis; they are research artifacts only.**
 
 ---
 
-## 9 Acknowledgments 🙏  
+
+## 8 Acknowledgments 🙏  
 
 Thanks to **Dr. Mohammadreza Hajiarbabi**, **Dr. Jonathan Rusert**, and **Dr. Alessandro Selvitella** for invaluable guidance, and to Purdue’s Gilbreth HPC staff for compute support.
