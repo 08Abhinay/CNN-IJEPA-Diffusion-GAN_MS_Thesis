@@ -148,7 +148,7 @@ srun --gres=gpu:2 \
       --metrics=kid50k_full,is50k \
       --network=/scratch/<user>~/network-snapshot-000403.pkl \
       --data=/scratch/<user>~/dataset/256/Brain_cancer_labelled.zip
-
+```
 ---
 
 ## 5 Results snapshot 📊  
