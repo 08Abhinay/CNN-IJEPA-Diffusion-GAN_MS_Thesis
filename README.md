@@ -1,7 +1,6 @@
 # IJEPA-Diffusion-GAN 🩺✨  
 *A hybrid generative framework for anatomy‑aware, data‑efficient medical‑image synthesis*
 
-![License](https://img.shields.io/github/license/08Abhinay/IJEPA-Diffusion-GAN)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Papers](https://img.shields.io/badge/paper-Purdue%20M.S.%20Thesis-orange)
 
