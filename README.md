@@ -85,6 +85,7 @@ Each folder in `scripts/StyleGAN2/*` ships with a ready‑to‑submit SLURM file
 (`ijepa_SG_Chest_rampGD_warmup_5.4_4gpu_sem_mixing_0.9_FusionAlpha_0.2.sh`):
 
 ```bash
+#!/bin/bash
 
 export PROJECT=~/StyleGAN2/stylegan2-ada-pytorch
 export TMPDIR=$PROJECT/tmp/torch_tmp
