@@ -194,3 +194,10 @@ doi = "10.25394/PGS.29649557.v1"
 ## 8 Acknowledgments 🙏  
 
 Thanks to **Dr. Mohammadreza Hajiarbabi**, **Dr. Jonathan Rusert**, and **Dr. Alessandro Selvitella** for invaluable guidance, and to Purdue’s Gilbreth HPC staff for compute support.
+
+This work builds upon several outstanding open-source repositories and their authors:
+- **StyleGAN2-ADA** by Karras et al. (https://github.com/NVlabs/stylegan2-ada)  
+- **InsGen** by Yang et al. (https://github.com/ceyuanyang/InsGen)  
+- **ProjectedGAN** by Sauer et al. (https://github.com/axelsauer/projected-gan)  
+- **Diffusion-GAN** by Wang et al. (https://github.com/Zhendong-Wang/Diffusion-GAN)
+
