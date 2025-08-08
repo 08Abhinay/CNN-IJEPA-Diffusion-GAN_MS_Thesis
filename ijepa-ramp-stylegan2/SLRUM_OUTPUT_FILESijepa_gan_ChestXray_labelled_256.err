@@ -1,0 +1,5 @@
+Usage: train.py [OPTIONS]
+Try 'train.py --help' for help.
+
+Error: No such option: --extraP Did you mean --extra_dim?
+srun: error: gilbreth-b005: task 0: Exited with exit code 2
