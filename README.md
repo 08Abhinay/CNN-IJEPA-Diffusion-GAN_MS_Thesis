@@ -1,7 +1,6 @@
 # IJEPA-Diffusion-GAN 🩺✨  
 *A hybrid generative framework for anatomy‑aware, data‑efficient medical‑image synthesis*
 
-[📖 **Read the full thesis (PDF)**]([https://github.com/08Abhinay/IJEPA-Diffusion-GAN/raw/main/docs/Final_Master_Thesis.pdf](https://hammer.purdue.edu/articles/thesis/Addressing_Data_Scarcity_in_Medical_Imaging_A_Hybrid_Approach_Combining_IJEPA_Diffusion_and_GANs/29649557/1?file=56585534))
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Papers](https://img.shields.io/badge/paper-Purdue%20M.S.%20Thesis-orange)
 
